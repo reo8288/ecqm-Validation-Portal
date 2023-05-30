@@ -11,11 +11,11 @@
 		<div class="row mb-3">
 			<div class="col-md-12">
 				<div class="table-responsive">
-					<TelerikGrid Data="@MismatchQuestions"
+					<TelerikGrid Data="@MismatchQuestions" @ref="Grid"
 								 Sortable="true"
 								 Groupable="true"
 								 Pageable="true"
-								 SortMode="SortMode.Single"
+								 SortMode="SortMode.Multiple"
 								 Resizable="true"
 								 Reorderable="true"
 								 SelectionMode="@GridSelectionMode.Single"
@@ -70,12 +70,12 @@
 										MismatchQuestionModel item = context as MismatchQuestionModel;
 										<div class="fw-bold">@item.ElementNames</div>
 										<div>
-											CDAC Found: <strong>@(item.CDACFound ? "Yes" : "No")</strong>
+											CDAC Found: <strong>@item.CDACFoundYesNo</strong>
 										</div>
 									}
 								</Template>
 							</GridColumn>
-							<GridColumn Field="CDACFound" Visible="false" />
+							<GridColumn Field="CDACFoundYesNo" Visible="false" />
 							<GridColumn Field="Question" Title="Question" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
 								<Template>
 									@{
@@ -241,7 +241,7 @@
 	public TelerikGrid<MismatchQuestionModel> Grid { get; set; }
 	public string SearchBoxValue { get; set; }
 	public List<string> SearchBoxFields { get; set; } = new List<string>
-				{ "InstanceKey", "MeasureName", "CaseDateStart", "CaseDateEnd", "ElementNames", "CDACFound", "Question", "QuestionStatus", "SubmittedByName", "SubmittedDate", "UpdatedByName", "UpdatedDate" };
+				{ "InstanceKey", "MeasureName", "CaseDateStart", "CaseDateEnd", "ElementNames", "CDACFoundYesNo", "Question", "QuestionStatus", "SubmittedByName", "SubmittedDate", "UpdatedByName", "UpdatedDate" };
 	private async Task OnSearch(CompositeFilterDescriptor value)
 	{
 		await SetGridSearchBoxFilters(value);

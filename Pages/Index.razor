@@ -29,10 +29,8 @@
 			case MenuItemType.ReviewQuestions:
 				<ReviewQuestions Measures="Measures" Elements="Elements" />
 				break;
-			case MenuItemType.AddOrEditQuestion:
-				<QuestionForm MismatchQuestion="SelectedMismatchQuestion"
-							  OnQuestionFormClose="OnQuestionFormClose"
-							  Measures="Measures" Elements="Elements" />
+			case MenuItemType.AddOrReviewAnswers:
+				<AddOrReviewAnswers/>
 				break;
 		}
 	}
@@ -72,7 +70,7 @@
 		}
 		catch (Exception ex)
 		{
-
+			await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
 		}
 		finally
 		{
@@ -95,11 +93,11 @@
 				Text = "Review Submitted Questions",
 				MenuItem = MenuItemType.ReviewQuestions
 			},
-			//new GlobalMenu()
-			//{
-			//	Text = "New Question",
-			//	MenuItem = MenuItemType.AddOrEditQuestion
-			//}
+						new GlobalMenu()
+			{
+				Text = "Add Or Review Answers",
+				MenuItem = MenuItemType.AddOrReviewAnswers
+			},
 		});
 
 		return Items;

@@ -1,0 +1,280 @@
+﻿@using ecqmValidation.Library.Models
+@using ecqmValidation.Library.Helpers
+@using ecqmValidation.UI.Services
+@using Telerik.DataSource
+
+<div class="card">
+	<div class="card-header">
+		<h5>Add Or Review Answers</h5>
+	</div>
+	<div class="card-body">
+		<div class="row mb-3">
+			<div class="col-md-12">
+				<div class="table-responsive">
+					<TelerikGrid Data="@MismatchAnswers" @ref="Grid"
+								 Sortable="true"
+								 Groupable="true"
+								 Pageable="true"
+								 SortMode="SortMode.Multiple"
+								 Resizable="true"
+								 Reorderable="true"
+								 SelectionMode="@GridSelectionMode.Single"
+								 @bind-PageSize="@PageSize"
+								 @bind-Page="@CurrentPage"
+								 OnRowDoubleClick="@OnRowDoubleClickHandler">
+
+						<GridToolBarTemplate>
+							<GridUniversalSearchBox OnSearch="@OnSearch" T="MismatchAnswerModel" Fields="@SearchBoxFields" />
+							<TelerikCheckBox @bind-Value="ShowReviewedAnswers" OnChange="RefreshData" />
+							<label>Show Approved Answers</label>
+							<span class="k-toolbar-spacer" />
+
+							<GridCommandButton Icon="@FontIcon.Rotate" OnClick="@RefreshData">Refresh</GridCommandButton>
+							<GridCommandButton Command="ExcelExport" Icon="@FontIcon.FileExcel">Export to Excel</GridCommandButton>
+							<label class="k-checkbox-label"><TelerikCheckBox @bind-Value="@ExportAllPages" />Export All Pages</label>
+						</GridToolBarTemplate>
+
+						<GridSettings>
+							<GridPagerSettings InputType="PagerInputType.Input"
+											   PageSizes="@PageSizesList"
+											   ButtonCount="5"
+											   Adaptive="true">
+							</GridPagerSettings>
+						</GridSettings>
+
+						<GridExport>
+							<GridExcelExport FileName="telerik-grid-export" AllPages="@ExportAllPages" />
+						</GridExport>
+
+						<GridColumns>
+							<GridColumn Field="QuestionID" Visible="false" />
+							<GridColumn Field="InstanceKey" Title="ACN" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+							<GridColumn Field="MeasureName" Title="Measure" Width="180px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchAnswerModel item = context as MismatchAnswerModel;
+										<div class="fw-bold">@item.MeasureName</div>
+										<div>
+											@item.CaseDateStart.ToString("M/dd/yyyy") - @item.CaseDateEnd.ToString("M/dd/yyyy")
+										</div>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="CaseDateStart" Visible="false" />
+							<GridColumn Field="CaseDateEnd" Visible="false" />
+							<GridColumn Field="ElementNames" Title="Element" Width="155px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchAnswerModel item = context as MismatchAnswerModel;
+										<div class="fw-bold">@item.ElementNames</div>
+										<div>
+											CDAC Found: <strong>@item.CDACFoundYesNo</strong>
+										</div>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="CDACFoundYesNo" Visible="false" />
+							<GridColumn Field="Question" Title="Question" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchAnswerModel item = context as MismatchAnswerModel;
+										<fieldset disabled>
+											<TelerikTextArea @bind-Value="item.Question" AutoSize="true" />
+										</fieldset>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="QRDAFoundYesNo" Visible="false" />
+							<GridColumn Field="QRDANotes" Title="QRDA Info" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchAnswerModel item = context as MismatchAnswerModel;
+										if (item.AnswerID > 0) {
+											<div>
+												QRDA Found: <strong>@item.QRDAFoundYesNo</strong>
+											</div>
+											<fieldset disabled>
+												<TelerikTextArea @bind-Value="item.QRDANotes" AutoSize="true" />
+										</fieldset>
+										}
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="AnalysisComment" Title="Analysis" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchAnswerModel item = context as MismatchAnswerModel;
+										<fieldset disabled>
+											<TelerikTextArea @bind-Value="item.AnalysisComment" AutoSize="true" />
+										</fieldset>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="AnswerStatus" Title="Status" Width="100px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+							<GridColumn Field="AnsweredByName" Title="Answered By" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+							<GridColumn Field="AnsweredDate" Title="Date Answered" DisplayFormat="{0:MM/dd/yyyy}" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+							<GridColumn Field="ReviewedByName" Title="Reviewed By" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" Visible="ShowReviewedAnswers" />
+							<GridColumn Field="ReviewedDate" Title="Date Reviewed" DisplayFormat="{0:MM/dd/yyyy}" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" Visible="ShowReviewedAnswers" />
+
+							<GridCommandColumn Width="90px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<GridCommandButton OnClick="ApproveAnswer" Icon="@FontIcon.Check" Title="Approve Answer" Class="tooltip-target" />
+								<GridCommandButton OnClick="EditAnswer" Icon="@FontIcon.Pencil" Title="Edit Answer" Class="tooltip-target" />								
+							</GridCommandColumn>
+						</GridColumns>
+					</TelerikGrid>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<TelerikLoaderContainer Visible="@LoaderContainerVisible" />
+
+@if (EditAnswerWindowVisible)
+{
+	<AnswerForm MismatchAnswer="SelectedAnswer" OnAnswerFormClose="OnAnswerFormClose" />
+}
+
+<TelerikTooltip TargetSelector=".tooltip-target" />
+
+@code {
+	[CascadingParameter] protected NotificationManager NotificationManager { get; set; }
+
+	[Inject] AppSettings AppSettings { get; set; }
+	[Inject] ecqmValidationService ecqmValidationService { get; set; }
+
+	protected IEnumerable<MismatchAnswerModel> MismatchAnswers = Enumerable.Empty<MismatchAnswerModel>();
+
+	protected MismatchAnswerModel SelectedAnswer { get; set; }
+
+	protected bool ExportAllPages { get; set; }
+	protected int PageSize { get; set; } = 15;
+	protected int CurrentPage { get; set; } = 1;
+	protected List<int?> PageSizesList = new List<int?>() { 5, 10, 15, 20, 25, 30, 50, 100 };
+
+	protected bool LoaderContainerVisible { get; set; }
+	protected bool EditAnswerWindowVisible { get; set; }
+
+	protected bool ShowReviewedAnswers { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		await RefreshData();
+		await base.OnInitializedAsync();
+	}
+	protected async Task OnRowDoubleClickHandler(GridRowClickEventArgs args)
+	{
+		var answer = (MismatchAnswerModel)args.Item;
+		await OpenEditAnswerForm(answer.QuestionID);
+	}
+	protected async Task EditAnswer(GridCommandEventArgs args)
+	{
+		var answer = (MismatchAnswerModel)args.Item;
+		await OpenEditAnswerForm(answer.QuestionID);
+	}
+	protected async Task OpenEditAnswerForm(int questionID)
+	{
+		await GetSelectedAnswerByID(questionID);
+
+		if (SelectedAnswer is not null)
+		{
+			if (SelectedAnswer.AnswerID > 0)
+			{
+				SelectedAnswer.IsReview = true;
+				SelectedAnswer.ReviewedByID = AppSettings.ActiveUser.UserID;
+			}
+			else
+			{
+				SelectedAnswer.AnsweredByID = AppSettings.ActiveUser.UserID;
+				SelectedAnswer.AnsweredByName = AppSettings.ActiveUser.FullName;
+			}
+
+			EditAnswerWindowVisible = true;
+		}
+		else
+		{
+			await InvokeAsync(() => NotificationManager.Notification.Show($"Unable to load answer to question with QuestionID {questionID}.", ThemeConstants.Notification.ThemeColor.Error, 0));
+		}
+	}
+	protected async Task ApproveAnswer(GridCommandEventArgs args)
+	{
+		var answer = (MismatchAnswerModel)args.Item;
+		await UpdateAnswerStatus(answer.AnswerID, QAStatus.Approved);
+	}
+
+	protected async Task UpdateAnswerStatus(int answerID, QAStatus qAStatus)
+	{
+		if (answerID > 0)
+		{
+			SelectedAnswer = MismatchAnswers.FirstOrDefault(x => x.AnswerID == answerID);
+			SelectedAnswer.AnswerStatus = qAStatus;
+			SelectedAnswer.ReviewedByID = AppSettings.ActiveUser.UserID;
+			try
+			{
+				int result = await ecqmValidationService.UpdateAnswerStatus(SelectedAnswer);
+				if (result > 0)
+				{
+					await InvokeAsync(() => NotificationManager.Notification.Show($"Answer status updated to {qAStatus}.", ThemeConstants.Notification.ThemeColor.Success, 5000));
+				}
+			}
+			catch (Exception ex)
+			{
+				await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+			}
+		}
+	}
+	protected async Task GetSelectedAnswerByID(int questionID)
+	{
+		try
+		{
+			LoaderContainerVisible = true;
+			SelectedAnswer = await ecqmValidationService.GetQuestionAndAnswerByID(questionID);
+		}
+		catch (Exception ex)
+		{
+			await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+		}
+		finally
+		{
+			LoaderContainerVisible = false;
+		}
+	}
+		protected async Task RefreshData()
+	{
+		try
+		{
+			LoaderContainerVisible = true;
+			MismatchAnswers = await ecqmValidationService.GetApprovedQuestionsToAnswer(AppSettings.ActiveUser.UserID, ShowReviewedAnswers);
+		}
+		catch (Exception ex)
+		{
+			await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+		}
+		finally
+		{
+			LoaderContainerVisible = false;
+		}
+	}
+	protected async Task OnAnswerFormClose()
+	{
+		await RefreshData();
+		EditAnswerWindowVisible = false;
+	}
+	#region Universal Search Box
+	public TelerikGrid<MismatchAnswerModel> Grid { get; set; }
+	public string SearchBoxValue { get; set; }
+	public List<string> SearchBoxFields { get; set; } = new List<string>
+				{ "InstanceKey", "MeasureName", "CaseDateStart", "CaseDateEnd", "ElementNames", "CDACFoundYesNo", "Question", "QRDAFoundYesNo", "QRDANotes", "AnalysisComment", "AnswerStatus", "AnsweredByName", "AnsweredDate", "ReviewedByName", "ReviewedDate" };
+	private async Task OnSearch(CompositeFilterDescriptor value)
+	{
+		await SetGridSearchBoxFilters(value);
+	}
+	public async Task SetGridSearchBoxFilters(CompositeFilterDescriptor searchDescriptors)
+	{
+		var state = Grid.GetState();
+
+		state.SearchFilter = searchDescriptors;
+
+		await Grid.SetStateAsync(state);
+	}
+	#endregion
+}

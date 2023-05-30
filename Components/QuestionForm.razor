@@ -46,14 +46,14 @@
 								</div>
 								<div class="row">
 									<div class="col-md">
-										<label>Case Dates Start</label>
+										<label>Case Date Start</label>
 										<TelerikDatePicker @bind-Value="@MismatchQuestion.CaseDateStart"
 														   Format="MM/dd/yyyy"
 														   Max="@DateTime.Now.Date" Class="form-control" />
 										<TelerikValidationMessage For="@(() => MismatchQuestion.CaseDateStart)" Class="validation-message" />
 									</div>
 									<div class="col-md">
-										<label>Case Dates End</label>
+										<label>Case Date End</label>
 										<TelerikDatePicker @bind-Value="@MismatchQuestion.CaseDateEnd"
 														   Format="MM/dd/yyyy"
 														   Max="@DateTime.Now.Date" Class="form-control" />

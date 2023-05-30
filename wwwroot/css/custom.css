@@ -166,7 +166,7 @@ span.k-menu-link-text {
 .form-text {
     display: block;
     width: 100%;
-    min-height: 100px;
+    min-height: 80px;
     padding: 16px 20px;
     font-size: 1rem;
     font-weight: 400;

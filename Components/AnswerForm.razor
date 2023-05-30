@@ -1,53 +1,149 @@
 ﻿@using ecqmValidation.Library.Models
+@using ecqmValidation.Library.Helpers
+@using ecqmValidation.UI.Services
 
-<TelerikForm Model="@MismatchQuestion">
-	<FormValidation>
-		<DataAnnotationsValidator />
-	</FormValidation>
-	<FormItems>
-		<div class="card">			
-			<div class="card-body">				
-				<div class="row mb-3">
-					<div class="col-md-12">
-						<label for="qrdaNotes">QRDA Data Notes</label>
-						<div class="float-end">
-							<label for="qrdaElementFound">QRDA Found</label>
-							<TelerikSwitch @bind-Value="MismatchAnswer.QRDTFound"
-										   OnLabel="Yes" OffLabel="No" Class="mb-2" Id="qrdaElementFound" />
+<TelerikWindow Class="modal-window" Width="50%" MinHeight="80%" Centered="true" Modal="true" Visible="true">
+	<WindowActions>
+		<WindowAction Name="Close" OnClick="OnAnswerFormClose" />
+	</WindowActions>
+	<WindowContent>
+		<TelerikForm EditContext="editContext">
+			<FormValidation>
+				<DataAnnotationsValidator />
+			</FormValidation>
+			<FormItems>
+				<div class="card">
+					<div class="card-header">
+						<div class="row">
+							<div class="col-md-6">
+								<h5>@PageTitle</h5>
+							</div>
+							<div class="col-md-6 text-end justify-content-end">
+								Answered By: @MismatchAnswer.AnsweredByName
+							</div>
 						</div>
-						<TelerikTextArea Class="form-text mb-3" @bind-Value="@MismatchAnswer.QRDANotes" Id="qrdaNotes" AutoSize="true" />
+					</div>
+					<div class="card-body">
+						<div class="row mb-3">
+							<div class="col-md">
+								<label for="instanceKey">Instance Key</label>
+								<div class="form-control">
+									@MismatchAnswer.InstanceKey
+								</div>
+							</div>
+							<div class="col-md">
+								<label for="measure">Measure</label>
+								<div class="form-control">
+									@MismatchAnswer.MeasureName
+								</div>
+							</div>
+							<div class="col-md">
+								<label for="casedates">Case Dates</label>
+								<div class="form-text">
+									@MismatchAnswer.CaseDateStart.ToString("MM/dd/yyyy") - @MismatchAnswer.CaseDateEnd.ToString("MM/dd/yyyy")
+								</div>
+							</div>
+							<div class="col-md">
+								<label for="elementnames">Elements</label>
+								<div class="form-text">
+									@MismatchAnswer.ElementNames
+								</div>
+							</div>
+						</div>
+						<fieldset disabled>
+							<div class="row mb-3">
+								<div class="col-md">
+									<div class="float-end">
+										<label for="cdacfound">CDAC Found</label>
+										<TelerikSwitch @bind-Value="MismatchAnswer.CDACFound"
+													   OnLabel="Yes" OffLabel="No" Class="mb-2" Id="cdacfound" Enabled="false" />
+									</div>
+									<label for="question">CDAC Question</label>
+									<TelerikTextArea Class="form-text" @bind-Value="@MismatchAnswer.Question" Id="question" AutoSize="true" />
+								</div>
+							</div>
+						</fieldset>
+						<div class="row mb-3">
+							<div class="col-md-12">
+								<label for="qrdaNotes">QRDA Data Notes</label>
+								<div class="float-end">
+									<label for="qrdaElementFound">QRDA Found</label>
+									<TelerikSwitch @bind-Value="MismatchAnswer.QRDAFound"
+												   OnLabel="Yes" OffLabel="No" Class="mb-2" Id="qrdaElementFound" />
+								</div>
+								<TelerikTextArea Class="form-text mb-3" @bind-Value="@MismatchAnswer.QRDANotes" Id="qrdaNotes" AutoSize="true" />
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md-12">
+								<label for="analysisComment">Lantana Analysis Comment</label>
+								<TelerikTextArea Class="form-text" @bind-Value="@MismatchAnswer.AnalysisComment" Id="analysisComment" AutoSize="true" />
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md-12 text-end">
+								<TelerikButton Icon="@FontIcon.Cancel" Class="btn btn-secondary mr-3" ButtonType="@ButtonType.Button" OnClick="CloseAnswerForm">Close</TelerikButton>
+								<TelerikButton Icon="@FontIcon.Save" Class="btn btn-primary" ButtonType="@ButtonType.Button" OnClick="@(() => ProcessMismatchAnswer(QAStatus.Saved))" Visible="@(!MismatchAnswer.IsReview)">Save</TelerikButton>
+								<TelerikButton Icon="@FontIcon.Forward" Class="btn btn-tertiary" ButtonType="@ButtonType.Button" OnClick="@(() => ProcessMismatchAnswer(QAStatus.Submitted))" Visible="@(!MismatchAnswer.IsReview)">Save and Submit</TelerikButton>
+								<TelerikButton Icon="@FontIcon.Check" Class="btn btn-primary" ButtonType="@ButtonType.Button" OnClick="@(() => ProcessMismatchAnswer(QAStatus.Approved))" Visible="@MismatchAnswer.IsReview">Save and Approve</TelerikButton>
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="row mb-3">
-					<div class="col-md-12">
-						<label for="analysisComment">Lantana Analysis Comment</label>
-						<TelerikTextArea Class="form-text" @bind-Value="@MismatchAnswer.AnalysisComment" Id="analysisComment" AutoSize="true" />
-					</div>
-				</div>
-			</div>
-		</div>
-	</FormItems>
-</TelerikForm>
-
+			</FormItems>
+		</TelerikForm>
+	</WindowContent>
+</TelerikWindow>
 @code {
-	[Parameter] public MismatchQuestionModel MismatchQuestion { get; set; }
-	protected MismatchAnswerModel MismatchAnswer { get; set; }
+	[CascadingParameter] protected NotificationManager NotificationManager { get; set; }
+
+	[Inject] AppSettings AppSettings { get; set; }
+	[Inject] ecqmValidationService ecqmValidationService { get; set; }
+
+	[Parameter] public MismatchAnswerModel MismatchAnswer { get; set; }
+	[Parameter] public EventCallback OnAnswerFormClose { get; set; }
+
+	protected EditContext editContext { get; set; }
+
+	protected string PageTitle { get; set; } = "New Answer";
 
 	protected override async Task OnInitializedAsync()
 	{
-		await GetMismatchAnswer();
+		editContext = new EditContext(MismatchAnswer);
+
+		if (MismatchAnswer.IsReview)
+		{
+			PageTitle = "Review Answer";
+		}
+		else if (MismatchAnswer.AnswerID > 0)
+		{
+			PageTitle = "Edit Answer";
+		}
+
 		await base.OnInitializedAsync();
 	}
-
-	protected async Task GetMismatchAnswer()
+	protected async Task ProcessMismatchAnswer(QAStatus qAStatus)
 	{
-		if (MismatchQuestion.QuestionID > 0)
+		if (editContext.Validate())
 		{
-			//try to load answer from the database
+			MismatchAnswer.AnswerStatus = qAStatus;
+			try
+			{
+				int result = await ecqmValidationService.UpsertMismatchAnswer(MismatchAnswer).ConfigureAwait(false);
+				if (result > 0)
+				{
+					await InvokeAsync(() => NotificationManager.Notification.Show($"Answer was {qAStatus} successfully!", ThemeConstants.Notification.ThemeColor.Success, 5000));
+					await CloseAnswerForm();
+				}
+			}
+			catch (Exception ex)
+			{
+				await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+			}
 		}
-		else
-		{
-			MismatchAnswer = new();
-		}
+	}
+	protected async Task CloseAnswerForm()
+	{
+		await InvokeAsync(() => OnAnswerFormClose.InvokeAsync());
 	}
 }

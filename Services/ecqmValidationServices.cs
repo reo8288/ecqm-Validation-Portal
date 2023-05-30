@@ -1,5 +1,7 @@
 ﻿using ecqmValidation.Library.Helpers;
 using ecqmValidation.Library.Models;
+using Microsoft.AspNetCore.Mvc;
+using Telerik.SvgIcons;
 
 namespace ecqmValidation.UI.Services
 {
@@ -26,6 +28,7 @@ namespace ecqmValidation.UI.Services
 			var result = await _httpClient.GetFromJsonAsync<IEnumerable<ElementModel>>("ecqmValidation/getelements");
 			return result.ToList();
 		}
+		#region Questions
 		public async Task<IEnumerable<MismatchQuestionModel>> GetUnansweredQuestionsForReview(bool showApproved = false, bool showCancelled = false)
 		{
 			var result = await _httpClient.GetFromJsonAsync<IEnumerable<MismatchQuestionModel>>($"ecqmValidation/getquestionsforreview?showApproved={showApproved}&&showCancelled={showCancelled}");
@@ -56,5 +59,28 @@ namespace ecqmValidation.UI.Services
 			var result = await _httpClient.PostAsJsonAsync<MismatchQuestionBaseModel>("ecqmValidation/submitquestion", mismatchQuestion).ConfigureAwait(false);
 			return result.Content.ReadFromJsonAsync<int>().Result;
 		}
+		#endregion
+		#region Answers
+		public async Task<IEnumerable<MismatchAnswerModel>> GetApprovedQuestionsToAnswer(int userID, bool showReviewed)
+		{
+			var result = await _httpClient.GetFromJsonAsync<IEnumerable<MismatchAnswerModel>>($"ecqmValidation/getquestionstoanswer?userID={userID}&&showReviewed={showReviewed}");
+			return result.ToList();
+		}
+		public async Task<MismatchAnswerModel> GetQuestionAndAnswerByID(int questionID)
+		{
+			return await _httpClient.GetFromJsonAsync<MismatchAnswerModel>($"ecqmValidation/getquestionandanswerbyid?questionID={questionID}");
+		}
+		public async Task<int> UpsertMismatchAnswer(MismatchAnswerModel mismatchAnswer)
+		{
+			Throw.Exception.IfNull(mismatchAnswer);
+			var result = await _httpClient.PostAsJsonAsync<MismatchAnswerModel>("ecqmValidation/upsertmismatchanswer", mismatchAnswer).ConfigureAwait(false);
+			return result.Content.ReadFromJsonAsync<int>().Result;
+		}
+		public async Task<int> UpdateAnswerStatus(MismatchAnswerBaseModel mismatchAnswer)
+		{
+			var result = await _httpClient.PostAsJsonAsync<MismatchAnswerBaseModel>("ecqmValidation/updateanswerstatus", mismatchAnswer).ConfigureAwait(false);
+			return result.Content.ReadFromJsonAsync<int>().Result;
+		}
+		#endregion
 	}
 }
