@@ -1,0 +1,53 @@
+﻿@using ecqmValidation.Library.Models
+
+<TelerikForm Model="@MismatchQuestion">
+	<FormValidation>
+		<DataAnnotationsValidator />
+	</FormValidation>
+	<FormItems>
+		<div class="card">			
+			<div class="card-body">				
+				<div class="row mb-3">
+					<div class="col-md-12">
+						<label for="qrdaNotes">QRDA Data Notes</label>
+						<div class="float-end">
+							<label for="qrdaElementFound">QRDA Found</label>
+							<TelerikSwitch @bind-Value="MismatchAnswer.QRDTFound"
+										   OnLabel="Yes" OffLabel="No" Class="mb-2" Id="qrdaElementFound" />
+						</div>
+						<TelerikTextArea Class="form-text mb-3" @bind-Value="@MismatchAnswer.QRDANotes" Id="qrdaNotes" AutoSize="true" />
+					</div>
+				</div>
+				<div class="row mb-3">
+					<div class="col-md-12">
+						<label for="analysisComment">Lantana Analysis Comment</label>
+						<TelerikTextArea Class="form-text" @bind-Value="@MismatchAnswer.AnalysisComment" Id="analysisComment" AutoSize="true" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</FormItems>
+</TelerikForm>
+
+@code {
+	[Parameter] public MismatchQuestionModel MismatchQuestion { get; set; }
+	protected MismatchAnswerModel MismatchAnswer { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetMismatchAnswer();
+		await base.OnInitializedAsync();
+	}
+
+	protected async Task GetMismatchAnswer()
+	{
+		if (MismatchQuestion.QuestionID > 0)
+		{
+			//try to load answer from the database
+		}
+		else
+		{
+			MismatchAnswer = new();
+		}
+	}
+}

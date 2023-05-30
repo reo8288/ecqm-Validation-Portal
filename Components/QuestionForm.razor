@@ -1,0 +1,157 @@
+﻿@using ecqmValidation.Library.Models
+@using ecqmValidation.Library.Helpers
+@using ecqmValidation.UI.Services
+
+<TelerikWindow Class="modal-window" Width="40%" MinHeight="60%" Centered="true" Modal="true" Visible="true">
+	<WindowActions>
+		<WindowAction Name="Close" OnClick="OnQuestionFormClose" />
+	</WindowActions>
+	<WindowContent>
+		<TelerikForm EditContext="editContext">
+			<FormValidation>
+				<DataAnnotationsValidator />
+			</FormValidation>
+			<FormItems>
+				<div class="card">
+					<div class="card-header">
+						<div class="row">
+							<div class="col-md-6">
+								<h5>@PageTitle</h5>
+							</div>
+							<div class="col-md-6 text-end justify-content-end">
+								Adjudicator: @MismatchQuestion.SubmittedByName
+							</div>
+						</div>
+					</div>
+					<div class="card-body">
+						<div class="row mb-3">
+							<div class="col-md-8">
+								<div class="row mb-3">
+									<div class="col-md">
+										<label for="instanceKey">Instance Key</label>
+										<TelerikTextBox @bind-Value="@MismatchQuestion.InstanceKey" Id="instanceKey" Class="form-control" />
+										<TelerikValidationMessage For="@(() => MismatchQuestion.InstanceKey)" Class="validation-message" />
+									</div>
+									<div class="col-md">
+										<label for="measure">Measure </label>
+										<TelerikDropDownList Data="@Measures"
+															 TextField="MeasureName"
+															 ValueField="MeasureID"
+															 Id="measure"
+															 Filterable="true"
+															 @bind-Value="@MismatchQuestion.MeasureID"
+															 Class="form-control" />
+										<TelerikValidationMessage For="@(() => MismatchQuestion.MeasureID)" Class="validation-message" />
+									</div>
+								</div>
+								<div class="row">
+									<div class="col-md">
+										<label>Case Dates Start</label>
+										<TelerikDatePicker @bind-Value="@MismatchQuestion.CaseDateStart"
+														   Format="MM/dd/yyyy"
+														   Max="@DateTime.Now.Date" Class="form-control" />
+										<TelerikValidationMessage For="@(() => MismatchQuestion.CaseDateStart)" Class="validation-message" />
+									</div>
+									<div class="col-md">
+										<label>Case Dates End</label>
+										<TelerikDatePicker @bind-Value="@MismatchQuestion.CaseDateEnd"
+														   Format="MM/dd/yyyy"
+														   Max="@DateTime.Now.Date" Class="form-control" />
+										<TelerikValidationMessage For="@(() => MismatchQuestion.CaseDateEnd)" Class="validation-message" />
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<label for="element">Mismatch Element </label>
+								<TelerikMultiSelect Data="@Elements"
+													TextField="ElementName"
+													ValueField="ElementID"
+													AutoClose="false"
+													Id="element"
+													@bind-Value="@MismatchQuestion.SelectedElements" />
+								<TelerikValidationMessage For="@(() => MismatchQuestion.ElementSelectionValidation)" Class="validation-message" />
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md">
+								<div class="float-end">
+									<label for="cdacElementFound">CDAC Found</label>
+									<TelerikSwitch @bind-Value="MismatchQuestion.CDACFound"
+												   OnLabel="Yes" OffLabel="No" Class="mb-2" Id="cdacElementFound" />
+								</div>
+								<label for="question">CDAC Question</label>
+								<TelerikTextArea Class="form-text" @bind-Value="@MismatchQuestion.Question" Id="question" AutoSize="true" />
+								<TelerikValidationMessage For="@(() => MismatchQuestion.Question)" Class="validation-message" />
+							</div>
+						</div>
+						<div class="row mb-3">
+							<div class="col-md-12 text-end">
+								<TelerikButton Icon="@FontIcon.Cancel" Class="btn btn-secondary mr-3" ButtonType="@ButtonType.Button" OnClick="CloseQuestionForm">Close</TelerikButton>
+								<TelerikButton Icon="@FontIcon.Save" Class="btn btn-primary" ButtonType="@ButtonType.Button" OnClick="@(() => ProcessMismatchQuestion(QAStatus.Saved))" Visible="@(!MismatchQuestion.IsReview)">Save</TelerikButton>
+								<TelerikButton Icon="@FontIcon.Forward" Class="btn btn-tertiary" ButtonType="@ButtonType.Button" OnClick="@(() => ProcessMismatchQuestion(QAStatus.Submitted))" Visible="@(!MismatchQuestion.IsReview)">Save and Submit</TelerikButton>
+								<TelerikButton Icon="@FontIcon.Check" Class="btn btn-primary" ButtonType="@ButtonType.Button" OnClick="@(() => ProcessMismatchQuestion(QAStatus.Approved))" Visible="@MismatchQuestion.IsReview">Save and Approve</TelerikButton>
+								<TelerikButton Icon="@FontIcon.Trash" Class="btn btn-tertiary" ButtonType="@ButtonType.Button" OnClick="@(() => ProcessMismatchQuestion(QAStatus.Cancelled))" Visible="@MismatchQuestion.IsReview">Cancel Question</TelerikButton>
+							</div>
+						</div>
+					</div>
+				</div>
+			</FormItems>
+		</TelerikForm>
+	</WindowContent>
+</TelerikWindow>
+
+@code {
+	[CascadingParameter] protected NotificationManager NotificationManager { get; set; }
+
+	[Inject] AppSettings AppSettings { get; set; }
+	[Inject] ecqmValidationService ecqmValidationService { get; set; }
+
+	[Parameter] public EventCallback OnQuestionFormClose { get; set; }
+	[Parameter] public MismatchQuestionModel MismatchQuestion { get; set; }
+	[Parameter] public IEnumerable<MeasureModel> Measures { get; set; }
+	[Parameter] public IEnumerable<ElementModel> Elements { get; set; }
+
+	protected EditContext editContext { get; set; }
+
+	protected string PageTitle { get; set; } = "New Question";
+
+	protected override async Task OnInitializedAsync()
+	{
+		editContext = new EditContext(MismatchQuestion);
+
+		if (MismatchQuestion.IsReview)
+		{
+			PageTitle = "Review Question";
+		}
+		else if (MismatchQuestion.QuestionID > 0)
+		{
+			PageTitle = "Edit Question";
+		}
+
+		await base.OnInitializedAsync();
+	}
+	protected async Task ProcessMismatchQuestion(QAStatus qAStatus)
+	{
+		if (editContext.Validate())
+		{
+			MismatchQuestion.QuestionStatus = qAStatus;
+			try
+			{
+				int result = await ecqmValidationService.UpsertMismatchQuestion(MismatchQuestion).ConfigureAwait(false);
+				if (result > 0)
+				{
+					await InvokeAsync(() => NotificationManager.Notification.Show($"Question was {qAStatus} successfully!", ThemeConstants.Notification.ThemeColor.Success, 5000));
+					await CloseQuestionForm();
+				}
+			}
+			catch (Exception ex)
+			{
+				await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+			}
+		}
+	}
+	protected async Task CloseQuestionForm()
+	{
+		await InvokeAsync(() => OnQuestionFormClose.InvokeAsync());
+	}
+}

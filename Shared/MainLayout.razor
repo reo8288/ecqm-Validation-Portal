@@ -1,0 +1,78 @@
+﻿@layout TelerikLayout
+@inherits LayoutComponentBase
+
+@using ecqmValidation.Library.Models
+@using ecqmValidation.Library.Helpers
+
+<div class="titleBar">
+    <h5 class="font-weight-bold">
+        eCQM Validation Portal
+        <span class="float-end">@AppSettings.ActiveUser?.FullName</span>
+    </h5>
+</div>
+
+<div class="page">
+    <main>
+		<CascadingValue IsFixed="true" Value="@NotificationManager">
+        <article class="content px-4">
+            @Body
+        </article>
+		</CascadingValue>
+    </main>
+</div>
+
+<!-- Notification dialog -->
+<TelerikNotification @ref="@NotificationManager.Notification"
+					 HorizontalPosition="@NotificationHorizontalPosition.Center"
+					 VerticalPosition="@NotificationVerticalPosition.Top"
+					 Class="big-notification">
+</TelerikNotification>
+
+@code {
+	[CascadingParameter] protected NotificationManager NotificationManager { get; set; } = new NotificationManager();
+//	[CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+	[Inject] AppSettings AppSettings { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		await AuthenticateUser();
+		await base.OnInitializedAsync();
+	}
+	protected async Task AuthenticateUser()
+	{
+		//var authState = await AuthenticationStateTask;
+		//var user = authState.User;
+
+		//if (user.Identity is null ? false : user.Identity.IsAuthenticated)
+		//{
+		//	AppSettings.ActiveUser = new UserModel
+		//		{
+		//			LoginName = user.Identity.Name.Split('\\').Last(),
+		//			//TEST DATA
+		//			UserID = 4000778,
+		//			FirstName = "Lana",
+		//			LastName = "Conte",
+		//			Email = "LConte@tistatech.com"
+		//			//END TEST DATA
+		//		};
+		//	//Get user info from database
+		//}
+		//else
+		{
+			AppSettings.ActiveUser = null;
+			//TEST DATA
+			AppSettings.ActiveUser = new UserModel
+				{
+					UserID = 4000778,
+					LoginName = "LConte",
+					FirstName = "Lana",
+					LastName = "Conte",
+					Email = "LConte@tistatech.com"
+				};
+			//END TEST DATA
+		}
+
+	}
+
+
+}

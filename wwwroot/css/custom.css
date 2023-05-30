@@ -1,0 +1,451 @@
+﻿/*======| GENERAL STYLES |======*/
+
+:root {
+    --bs-blue: #009ef7;
+    --bs-blue-light: #DEEBFF;
+    --bs-purple: #7e3a80;
+    --bs-purple-dark: #3a133e;
+    --bs-red: #f1416c;
+    --bs-red-light: #fff5f8;
+    --bs-orange: #fd7e14;
+    --bs-yellow: #ffc107;
+    --bs-green: #50cd89;
+    --bs-green-light: #B4F5C8;
+    --bs-white: #ffffff;
+    --bs-gray: #a1a5b7;
+    --bs-gray-dark: #3f4254;
+    --bs-gray-100: #f5f8fa;
+    --bs-gray-200: #eff2f5;
+    --bs-gray-300: #e4e6ef;
+    --bs-gray-400: #b5b5c3;
+    --bs-gray-500: #a1a5b7;
+    --bs-gray-600: #7e8299;
+    --bs-gray-700: #5e6278;
+    --bs-gray-800: #3f4254;
+    --bs-gray-900: #181c32;
+    --bs-light: #f5f8fa;
+    --bs-secondary: #eff2f5;
+    --bs-tertiary: #D33F8C;
+    --bs-success: #50cd89;
+    --bs-info: #7239ea;
+    --bs-warning: #ffc700;
+    --bs-danger: #F0406C;
+    --bs-dark: #181c32;
+    --bs-font-sans-serif: Poppins, Helvetica, "sans-serif";
+    --bs-body-font-family: var(--bs-font-sans-serif);
+    --bs-body-font-size: 1rem;
+    --bs-body-font-weight: 400;
+    --bs-body-line-height: 1.5;
+    --bs-body-color: #3f4254;
+    --bs-body-bg: #f5f8fa;
+}
+
+/*-- Card Styles --*/
+
+.card {
+    padding: 2rem;
+    font-size: 0.875rem;
+    border-radius: 0.5rem;
+    border: none;
+    box-shadow: 0px 0px 20px 0px rgba(76, 87, 125, 0.02) !important;
+}
+
+    .card .card-header {
+        min-height: 24px;
+        padding: 0;
+        background-color: transparent;
+        border-bottom: none;
+        margin-bottom: 1rem;
+    }
+
+        .card .card-header .card-title {
+            font-size: 1.35rem;
+            color: var(--bs-dark);
+            margin-bottom: 0.5rem !important;
+        }
+
+    .card .card-body {
+        padding: 0.5rem 0;
+    }
+
+    .card .card-header .card-title .card-label {
+        margin: 0 0 0.25rem 0;
+        font-weight: 800 !important;
+        display: block;
+    }
+
+    .card .card-header .card-toolbar {
+        align-items: center;
+        margin: 0 0 .5rem 0;
+    }
+
+    .card .card-header .card-status {
+        margin: 0 0 0.5rem 0;
+    }
+
+    .card .card-title .card-label {
+        font-size: 1.125rem !important;
+    }
+
+/*--- Title bar and sidebar ---*/
+.titleBar {
+    background-color: purple;
+    flex: 1;
+    padding: 16px 24px;
+    color: white;
+    align-items: center;
+}
+
+/*--- globalMenu formatting ---*/
+.globalMenu {
+    background-color: #fff;
+    padding: 8px 30px;
+    margin-bottom: 10px;
+    margin-left: -10px;
+    height: 64px;
+    display: flex;
+    box-shadow: 0px 10px 30px 0px rgba(82, 63, 105, 0.05);
+}
+
+    .globalMenu .table-responsive {
+        overflow-y: hidden;
+        height: 62px;
+    }
+
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-menu-link:hover,
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-menu-link:active,
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-menu-link.selected,
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-link.k-menu-link:hover,
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-link.k-menu-link:active,
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-link.k-menu-link.selected {
+            padding: 16px 24px;
+            color: #34ADF8 !important;
+            border-bottom: 3px solid #34ADF8;
+        }
+
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-menu-link:has(span.k-menu-link-text.active) {
+            padding: 16px 24px;
+            color: #34ADF8 !important;
+            border-bottom: 3px solid #34ADF8;
+        }
+
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-link.k-menu-link,
+        .globalMenu .table-responsive ul.k-reset.k-header.k-menu.telerik-blazor.k-menu-horizontal li.k-item.k-menu-item span.k-in.k-menu-link {
+            padding: 16px 24px;
+            color: #444 !important;
+            border-bottom: 3px solid transparent;
+        }
+
+a, a:hover {
+    color: var(--bs-blue);
+    text-decoration: none !important;
+}
+
+    a.k-menu-link-text {
+        color: #666666;
+        font-weight: 500;
+    }
+
+span.k-menu-link-text {
+    font-weight: 500 !important;
+    font-size: 0.9375rem;
+}
+
+    span.k-menu-link-text.active {
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+
+/*--- Form Elements ---*/
+.form-control {
+    height: calc(1.5em + 0.95rem + 2px) !important;
+    border-radius: 0.475rem !important;
+}
+
+.form-text {
+    display: block;
+    width: 100%;
+    min-height: 100px;
+    padding: 16px 20px;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #CED4DA;
+    border-radius: 0.25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    border-radius: 0.475rem;
+}
+
+.k-form-buttons {
+    visibility: hidden; /*Default telerik form submit button should be turned off*/
+    height: 0;
+    margin: 0;
+}
+/*-- Button Styles --*/
+
+.btn-sm {
+    border-radius: 4px;
+    border: none;
+    height: 2rem;
+    width: 2rem;
+}
+
+.btn-sm-refresh {
+    border-radius: 4px;
+    border: none;
+    height: 2.5rem;
+    width: 1rem;
+}
+
+.btn.btn-active-primary,
+.btn.btn-active-primary:hover,
+.btn.btn-primary,
+.btn.btn-primary:hover {
+    color: #fff;
+    border-color: var(--bs-blue) !important;
+    background-color: var(--bs-blue) !important;
+    padding: calc(.5rem + 1px) calc(1rem + 1px) !important;
+    border-radius: 0.475rem;
+}
+
+.btn-sm.btn-primary {
+    color: var(--bs-blue) !important;
+    background-color: var(--bs-secondary) !important;
+}
+
+.btn-sm.btn-tertiary,
+.btn-sm.btn-tertiary:hover,
+.btn-sm-refresh.btn-tertiary,
+.btn-sm-refresh.btn-tertiary:hover {
+    color: #fff;
+    background-color: var(--bs-tertiary);
+    border-color: var(--bs-tertiary);
+}
+
+.btn.btn-danger,
+.btn.btn-danger:hover {
+    color: #fff;
+    border-color: #F0406C !important;
+    background-color: #F0406C !important;
+    border-radius: 0.475rem;
+    padding: calc(.5rem + 1px) calc(1rem + 1px) !important;
+}
+
+.btn.btn-secondary {
+    color: var(--bs-blue) !important;
+    font-weight: 500;
+    background-color: var(--bs-secondary) !important;
+    border-color: var(--bs-secondary) !important;
+    border-radius: 0.475rem;
+    padding: calc(.5rem + 1px) calc(1rem + 1px) !important;
+}
+
+.btn.btn-green {
+    color: #ffffff !important;
+    font-weight: 500;
+    background-color: var(--bs-green) !important;
+    border-color: var(--bs-green) !important;
+    border-radius: 0.475rem;
+    padding: calc(.5rem + 1px) calc(1rem + 1px) !important;
+}
+
+.btn.btn-tertiary,
+.btn.btn-tertiary:hover {
+    color: #fff;
+    background-color: var(--bs-tertiary);
+    border-color: var(--bs-tertiary);
+    border-radius: 0.475rem;
+    padding: calc(.5rem + 1px) calc(1rem + 1px) !important;
+}
+
+.btn.btn-outline {
+    color: #9b9b9b;
+    background-color: #ffffff;
+    border-color: #d7d7d7 !important;
+}
+
+.btn.btn-outline-secondary {
+    color: #fff;
+    background-color: var(--bs-blue);
+    border-color: var(--bs-blue) !important;
+    font-size: 0.875rem !important;
+    border-top-right-radius: 0.475rem !important;
+    border-bottom-right-radius: 0.475rem !important;
+    padding: calc(.5rem + 1px) calc(1rem + 1px) !important;
+}
+
+.btn.btn-outline:hover {
+    color: #ffffff;
+    background-color: var(--bs-blue) !important;
+    border-color: var(--bs-blue) !important;
+}
+
+.btn-neutral {
+    color: #009ef7 !important;
+    background-color: #f5f8fa;
+    border-color: transparent !important;
+    border-radius: 0.475rem;
+    font-weight: 900 !important;
+}
+.validation-message {
+    color: red;
+}
+/*-- Kendo Button Styles --*/
+
+.k-button-solid-primary {
+    border-color: var(--bs-blue) !important;
+    background-color: var(--bs-blue) !important;
+    background-image: none !important;
+    padding: calc(0.55rem + 1px) calc(1.25rem + 1px) !important;
+}
+
+.k-button-solid-base {
+    background-image: none !important;
+}
+
+.k-button-md {
+    padding: 8px 16px !important;
+    font-size: 0.9375rem !important;
+    line-height: 1.4285714286;
+}
+
+.k-grid-container .k-button-md {
+    padding: 4px !important;
+}
+
+.telerik-blazor.k-button.btn-sm btn-primary.k-button-solid.k-rounded-md.k-button-rectangle.k-button-md.k-button-solid-base {
+    line-height: normal !important;
+    border-radius: 2px !important;
+    padding: 0.475rem 0 !important;
+}
+
+/* Locked and Unlocked Status Style */
+.telerik-blazor.k-button.btn.unlocked.k-button-solid.k-rounded-md.k-button-md.k-button-solid-base {
+    padding: 3px 12px !important;
+    border-radius: 40px !important;
+    border: 1px solid #27A306 !important;
+    color: #27A306 !important;
+    background-color: transparent !important;
+    font-size: 0.875rem !important;
+}
+
+.telerik-blazor.k-button.btn.locked.k-button-solid.k-rounded-md.k-button-md.k-button-solid-base {
+    padding: 3px 12px !important;
+    border-radius: 40px !important;
+    border: 1px solid #D9001B !important;
+    color: #D9001B !important;
+    background-color: transparent !important;
+    font-size: 0.875rem !important;
+}
+/* Kendo switch */
+.k-switch-md .k-switch-track {
+    width: 56px !important;
+    height: 28px !important;
+}
+
+.k-switch-md .k-switch-thumb {
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.k-switch-md {
+    width: 56px !important;
+    height: 28px !important;
+    font-size: 11px !important;
+    margin-left: 6px;
+}
+
+.k-switch-on .k-switch-track {
+    border-color: deepskyblue !important;
+    color: white !important;
+    background-color: deepskyblue !important;
+}
+
+/* Kendo Checkbox */
+.k-checkbox:checked, .k-checkbox.k-checked {
+    border-color: var(--bs-blue) !important;
+    background-color: var(--bs-blue) !important;
+}
+
+.k-checkbox-md {
+    width: 16px;
+    height: 16px;
+    border-radius: 0.2rem !important;
+}
+
+.k-checkbox {
+    border-color: #d7d7d7 !important;
+    background-color: #ffffff;
+}
+
+/* Grid */
+.k-column-title {
+    font-weight: 600 !important; /* grid column titles */
+}
+.k-grid td.vertical-aligned-cell {
+    vertical-align: top;
+}
+
+/* Tabstrip Styles */
+
+.k-tabstrip-top > .k-tabstrip-items-wrapper .k-item.k-active {
+    border-bottom-color: var(--bs-blue) !important;
+    border-width: 3px !important;
+}
+
+.k-tabstrip-items-wrapper {
+    font-size: 0.9375rem !important;
+}
+
+.k-tabstrip-top > .k-tabstrip-items-wrapper .k-item {
+    color: var(--bs-gray-dark);
+}
+
+.k-tabstrip-items .k-link {
+    padding: 10px 24px !important;
+}
+
+.k-tabstrip-items-wrapper .k-item:active,
+.k-tabstrip-items-wrapper .k-item.k-active {
+    border-top: none !important;
+    border-right: none !important;
+    border-left: none !important;
+    border-bottom: 3px solid var(--bs-blue) !important;
+    color: var(--bs-blue) !important;
+}
+
+.k-tabstrip-items-wrapper .k-item:focus {
+    box-shadow: none !important;
+}
+
+.k-tabstrip-items-wrapper .k-item:hover {
+    color: var(--bs-blue) !important;
+}
+
+/* Tabstrip Content */
+
+.k-tabstrip-content, .k-tabstrip > .k-content {
+    border-color: #d7d7d7 !important;
+    color: var(--bs-gray-dark) !important;
+    background-color: #ffffff;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    padding: 24px !important;
+}
+
+#recordFlow .k-tabstrip-content,
+#recordFlow .k-tabstrip > .k-content {
+    padding-top: 0 !important;
+}
+
+.k-tabstrip-content:focus {
+    outline-width: 0 !important;
+    outline-style: none !important;
+    outline-offset: 0 !important;
+}

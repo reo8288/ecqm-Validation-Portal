@@ -1,0 +1,14 @@
+﻿<span class="k-menu-link-text @SelectedClass">@ActiveText</span>
+
+@code
+{
+    [Parameter] public string SelectedText { get; set; }
+    [Parameter] public string ActiveText { get; set; }
+
+    protected string SelectedClass { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        SelectedClass = SelectedText.Equals(ActiveText) ? "active" : string.Empty;
+    }
+}

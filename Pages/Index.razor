@@ -1,0 +1,116 @@
+﻿@page "/"
+@using ecqmValidation.Library.Models
+@using ecqmValidation.Library.Helpers
+@using ecqmValidation.UI.Services
+
+<div class="globalMenu">
+	<div class="table-responsive">
+		<TelerikMenu Data="@MenuData" Orientation="MenuOrientation.Horizontal"
+					 OnClick="@((GlobalMenu item) => OnClickHandler(item))">
+			<ItemTemplate Context="item">
+				<MenuItemTemplate SelectedText="@SelectedMenuItem.Text" ActiveText="@item.Text" />
+			</ItemTemplate>
+		</TelerikMenu>
+	</div>
+</div>
+<TelerikLoaderContainer Visible="@LoaderContainerVisible" />
+
+@{
+	if (AppSettings.ActiveUser is not null)
+	{
+		switch (SelectedMenuItem?.MenuItem)
+		{
+			case MenuItemType.None:
+				<h1>Nothing is selected</h1>
+				break;
+			case MenuItemType.ViewUserQuestions:
+				<ViewUserQuestions Measures="Measures" Elements="Elements" />
+				break;
+			case MenuItemType.ReviewQuestions:
+				<ReviewQuestions Measures="Measures" Elements="Elements" />
+				break;
+			case MenuItemType.AddOrEditQuestion:
+				<QuestionForm MismatchQuestion="SelectedMismatchQuestion"
+							  OnQuestionFormClose="OnQuestionFormClose"
+							  Measures="Measures" Elements="Elements" />
+				break;
+		}
+	}
+}
+
+@code {
+	[CascadingParameter] protected NotificationManager NotificationManager { get; set; }
+	[Inject] AppSettings AppSettings { get; set; }
+	[Inject] ecqmValidationService ecqmValidationService { get; set; }
+
+	protected MismatchQuestionModel SelectedMismatchQuestion { get; set; }
+	protected IEnumerable<MeasureModel> Measures = Enumerable.Empty<MeasureModel>();
+	protected IEnumerable<ElementModel> Elements = Enumerable.Empty<ElementModel>();
+
+	protected IEnumerable<GlobalMenu> MenuData { get; set; } = Enumerable.Empty<GlobalMenu>();
+	protected GlobalMenu SelectedMenuItem { get; set; }
+	protected bool LoaderContainerVisible { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+
+		await GetMeasuresAndElements();
+
+		MenuData = BuildMenu();
+		SelectedMenuItem = MenuData.First();
+
+		SelectedMismatchQuestion = new MismatchQuestionModel(AppSettings.ActiveUser);
+		await base.OnInitializedAsync();
+	}
+	protected async Task GetMeasuresAndElements()
+	{
+		try
+		{
+			LoaderContainerVisible = true;
+			Measures = await ecqmValidationService.GetMeasures().ConfigureAwait(false);
+			Elements = await ecqmValidationService.GetElements().ConfigureAwait(false);
+		}
+		catch (Exception ex)
+		{
+
+		}
+		finally
+		{
+			LoaderContainerVisible = false;
+		}
+	}
+	public IEnumerable<GlobalMenu> BuildMenu()
+	{
+		var Items = new List<GlobalMenu>();
+
+		Items.AddRange(new List<GlobalMenu>()
+		{
+			new GlobalMenu()
+			{
+				Text = "My Unanswered Questions",
+				MenuItem = MenuItemType.ViewUserQuestions
+			},
+			new GlobalMenu()
+			{
+				Text = "Review Submitted Questions",
+				MenuItem = MenuItemType.ReviewQuestions
+			},
+			//new GlobalMenu()
+			//{
+			//	Text = "New Question",
+			//	MenuItem = MenuItemType.AddOrEditQuestion
+			//}
+		});
+
+		return Items;
+	}
+	protected void OnClickHandler(GlobalMenu item)
+	{
+		SelectedMenuItem = item;
+	}
+	protected async Task OnQuestionFormClose()
+	{
+		SelectedMenuItem = MenuData.First();
+		SelectedMismatchQuestion = new MismatchQuestionModel(AppSettings.ActiveUser);
+	}
+}

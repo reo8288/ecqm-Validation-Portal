@@ -1,0 +1,286 @@
+﻿@using ecqmValidation.Library.Models
+@using ecqmValidation.Library.Helpers
+@using ecqmValidation.UI.Services
+@using Telerik.DataSource
+
+<div class="card">
+	<div class="card-header">
+		<h5>My Unanswered Questions</h5>
+	</div>
+	<div class="card-body">
+		<TelerikTabStrip ActiveTabIndexChanged="TabChangedHandler" ActiveTabIndex="@((int)ActiveTabIndex)">
+			<TabStripTab>
+				<HeaderTemplate>
+					Saved
+				</HeaderTemplate>
+			</TabStripTab>
+			<TabStripTab>
+				<HeaderTemplate>
+					Submitted / Approved
+				</HeaderTemplate>
+			</TabStripTab>
+			<TabStripTab>
+				<HeaderTemplate>
+					Cancelled
+				</HeaderTemplate>
+			</TabStripTab>
+		</TelerikTabStrip>
+		<div class="row mb-3">
+			<div class="col-md-12">
+				<div class="table-responsive">
+					<TelerikGrid Data="@FilteredMismatchQuestions" @ref="Grid"
+								 Sortable="true"
+								 Groupable="true"
+								 Pageable="true"
+								 SortMode="SortMode.Single"
+								 Resizable="true"
+								 Reorderable="true"
+								 SelectionMode="@GridSelectionMode.Single"
+								 @bind-PageSize="@PageSize"
+								 @bind-Page="@CurrentPage"
+								 OnRowDoubleClick="@OnRowDoubleClickHandler">
+
+						<GridToolBarTemplate>
+							<GridUniversalSearchBox OnSearch="@OnSearch" T="MismatchQuestionModel" Fields="@SearchBoxFields" />
+							<span class="k-toolbar-spacer" />
+							<GridCommandButton Icon="@FontIcon.Plus" OnClick="AddNewQuestion" Class="btn btn-primary">New Question</GridCommandButton>
+							<GridCommandButton Icon="@FontIcon.Rotate" OnClick="@RefreshData">Refresh</GridCommandButton>
+							<GridCommandButton Command="ExcelExport" Icon="@FontIcon.FileExcel">Export to Excel</GridCommandButton>
+							<label class="k-checkbox-label"><TelerikCheckBox @bind-Value="@ExportAllPages" />Export All Pages</label>
+						</GridToolBarTemplate>
+
+						<GridSettings>
+							<GridPagerSettings InputType="PagerInputType.Input"
+											   PageSizes="@PageSizesList"
+											   ButtonCount="5"
+											   Adaptive="true">
+							</GridPagerSettings>
+						</GridSettings>
+
+						<GridExport>
+							<GridExcelExport FileName="telerik-grid-export" AllPages="@ExportAllPages" />
+						</GridExport>
+
+						<GridColumns>
+							<GridColumn Field="QuestionID" Visible="false" />
+							<GridColumn Field="InstanceKey" Title="ACN" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+							<GridColumn Field="MeasureName" Title="Measure" Width="180px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchQuestionModel item = context as MismatchQuestionModel;
+										<div class="fw-bold">@item.MeasureName</div>
+										<div>
+											@item.CaseDateStart?.ToString("M/dd/yyyy") - @item.CaseDateEnd?.ToString("M/dd/yyyy")
+										</div>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="CaseDateStart" Visible="false" />
+							<GridColumn Field="CaseDateEnd" Visible="false" />
+							<GridColumn Field="ElementNames" Title="Element" Width="155px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchQuestionModel item = context as MismatchQuestionModel;
+										<div class="fw-bold">@item.ElementNames</div>
+										<div>
+											CDAC Found: <strong>@(item.CDACFound ? "Yes" : "No")</strong>
+										</div>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="CDACFound" Visible="false" />
+							<GridColumn Field="Question" Title="Question" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )">
+								<Template>
+									@{
+										MismatchQuestionModel item = context as MismatchQuestionModel;
+										<fieldset disabled>
+											<TelerikTextArea @bind-Value="item.Question" AutoSize="true" />
+										</fieldset>
+									}
+								</Template>
+							</GridColumn>
+							<GridColumn Field="QuestionStatus" Title="Status" Width="100px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+							@if (ActiveTabIndex != UnansweredQuestionsTab.Saved)
+							{
+								<GridColumn Field="SubmittedDate" Title="Date Submitted" DisplayFormat="{0:MM/dd/yyyy}" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+								<GridColumn Field="UpdatedByName" Title="Reviewed By" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+								<GridColumn Field="UpdatedDate" Title="Date Reviewed" DisplayFormat="{0:MM/dd/yyyy}" Width="130px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" />
+							}
+							<GridCommandColumn Width="100px" OnCellRender="@( (GridCellRenderEventArgs e) => e.Class = "vertical-aligned-cell" )" Visible="@(ActiveTabIndex == UnansweredQuestionsTab.Saved)">
+								<GridCommandButton OnClick="SubmitQuestion" Icon="@FontIcon.Check" Title="Submit Question" Class="tooltip-target" />
+								<GridCommandButton OnClick="EditQuestion" Icon="@FontIcon.Pencil" Title="Edit Question" Class="tooltip-target" />
+							</GridCommandColumn>
+						</GridColumns>
+					</TelerikGrid>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<TelerikLoaderContainer Visible="@LoaderContainerVisible" />
+
+@if (EditQuestionWindowVisible)
+{
+	<QuestionForm MismatchQuestion="SelectedQuestion" OnQuestionFormClose="OnQuestionFormClose"
+			  Measures="Measures" Elements="Elements" />
+}
+
+<TelerikTooltip TargetSelector=".tooltip-target" />
+
+@code {
+	[CascadingParameter] protected NotificationManager NotificationManager { get; set; }
+
+	[Inject] AppSettings AppSettings { get; set; }
+	[Inject] ecqmValidationService ecqmValidationService { get; set; }
+
+	[Parameter] public IEnumerable<MeasureModel> Measures { get; set; }
+	[Parameter] public IEnumerable<ElementModel> Elements { get; set; }
+
+	protected IEnumerable<MismatchQuestionModel> AllMismatchQuestions = Enumerable.Empty<MismatchQuestionModel>();
+	protected IEnumerable<MismatchQuestionModel> FilteredMismatchQuestions = Enumerable.Empty<MismatchQuestionModel>();
+
+	protected MismatchQuestionModel SelectedQuestion { get; set; }
+
+	protected UnansweredQuestionsTab ActiveTabIndex { get; set; } = UnansweredQuestionsTab.Saved;
+	protected bool ExportAllPages { get; set; }
+	protected int PageSize { get; set; } = 15;
+	protected int CurrentPage { get; set; } = 1;
+	protected List<int?> PageSizesList = new List<int?>() { 5, 10, 15, 20, 25, 30, 50, 100 };
+
+	protected bool LoaderContainerVisible { get; set; }
+	protected bool EditQuestionWindowVisible { get; set; }
+
+	protected override async Task OnInitializedAsync()
+	{
+		await RefreshData();
+		await base.OnInitializedAsync();
+	}
+	protected async Task OnRowDoubleClickHandler(GridRowClickEventArgs args)
+	{
+		var question = (MismatchQuestionModel)args.Item;
+		await OpenEditQuestionForm(question.QuestionID);
+	}
+	protected async Task EditQuestion(GridCommandEventArgs args)
+	{
+		var question = (MismatchQuestionModel)args.Item;
+		await OpenEditQuestionForm(question.QuestionID);
+	}
+	protected async Task OpenEditQuestionForm(int questionID)
+	{
+		await GetSelectedQuestionByID(questionID);
+		if (SelectedQuestion is not null)
+		{
+			EditQuestionWindowVisible = true;
+		}
+		else
+		{
+			await InvokeAsync(() => NotificationManager.Notification.Show($"Unable to load question with QuestionID {questionID}.", ThemeConstants.Notification.ThemeColor.Error, 0));
+		}
+	}
+		protected async Task SubmitQuestion(GridCommandEventArgs args)
+	{
+		var question = (MismatchQuestionModel)args.Item;
+		if (question.QuestionID > 0)
+		{
+			question = AllMismatchQuestions.FirstOrDefault(x => x.QuestionID == question.QuestionID);
+			question.QuestionStatus = QAStatus.Submitted;
+			question.SubmittedByID = AppSettings.ActiveUser.UserID;
+			try
+			{
+				int result = await ecqmValidationService.SubmitQuestion(question);
+				if (result > 0)
+				{
+					await InvokeAsync(() => NotificationManager.Notification.Show("Question was submitted successfully!", ThemeConstants.Notification.ThemeColor.Success, 5000));
+				}
+			}
+			catch (Exception ex)
+			{
+				await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+			}
+		}
+	}
+	protected void AddNewQuestion()
+	{
+		SelectedQuestion = new MismatchQuestionModel(AppSettings.ActiveUser);
+		EditQuestionWindowVisible = true;
+	}
+	protected async Task GetSelectedQuestionByID(int questionID)
+	{
+		try
+		{
+			LoaderContainerVisible = true;
+			SelectedQuestion = await ecqmValidationService.GetUnansweredQuestionByID(questionID);
+		}
+		catch (Exception ex)
+		{
+			await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+		}
+		finally
+		{
+			LoaderContainerVisible = false;
+		}
+	}
+	protected async Task RefreshData()
+	{
+		try
+		{
+			LoaderContainerVisible = true;
+			AllMismatchQuestions = await ecqmValidationService.GetUnansweredQuestionsForUser(AppSettings.ActiveUser.UserID);
+			FilterQuestionsForSelectedTab();
+		}
+		catch (Exception ex)
+		{
+			await InvokeAsync(() => NotificationManager.Notification.Show($"Error: {ex.Message}", ThemeConstants.Notification.ThemeColor.Error, 0));
+		}
+		finally
+		{
+			LoaderContainerVisible = false;
+		}
+	}
+	protected void FilterQuestionsForSelectedTab()
+	{
+		switch (ActiveTabIndex)
+		{
+			case UnansweredQuestionsTab.SubmittedOrApproved:
+				FilteredMismatchQuestions = AllMismatchQuestions.Where(x => x.QuestionStatus == QAStatus.Submitted || x.QuestionStatus == QAStatus.Approved);
+				break;
+			case UnansweredQuestionsTab.Cancelled:
+				FilteredMismatchQuestions = AllMismatchQuestions.Where(x => x.QuestionStatus == QAStatus.Cancelled);
+				break;
+			default:
+				FilteredMismatchQuestions = AllMismatchQuestions.Where(x => x.QuestionStatus == QAStatus.Saved);
+				break;
+		}
+	}
+	protected void TabChangedHandler(int newIndex)
+	{
+		if (newIndex != (int)ActiveTabIndex)
+		{
+			ActiveTabIndex = (UnansweredQuestionsTab)newIndex;
+			FilterQuestionsForSelectedTab();
+		}
+	}
+	protected async Task OnQuestionFormClose()
+	{
+		await RefreshData();
+		EditQuestionWindowVisible = false;
+	}
+	#region Universal Search Box
+	public TelerikGrid<MismatchQuestionModel> Grid { get; set; }
+	public string SearchBoxValue { get; set; }
+	public List<string> SearchBoxFields { get; set; } = new List<string>
+				{ "InstanceKey", "MeasureName", "CaseDateStart", "CaseDateEnd", "ElementNames", "CDACFound", "Question", "QuestionStatus", "SubmittedByName", "SubmittedDate", "UpdatedByName", "UpdatedDate" };
+	private async Task OnSearch(CompositeFilterDescriptor value)
+	{
+		await SetGridSearchBoxFilters(value);
+	}
+	public async Task SetGridSearchBoxFilters(CompositeFilterDescriptor searchDescriptors)
+	{
+		var state = Grid.GetState();
+
+		state.SearchFilter = searchDescriptors;
+
+		await Grid.SetStateAsync(state);
+	}
+	#endregion
+}
